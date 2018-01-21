@@ -1,28 +1,18 @@
 {
   "name": "choo-resource",
-  "version": "0.0.1",
-  "description": "",
-  "main": "example/index.js",
-  "directories": {
-    "example": "example"
-  },
-  "browser": {
-    "request": "xhr"
-  },
+  "version": "0.1.0",
+  "description": "simple resource management for choo apps",
+  "main": "index.js",
   "dependencies": {
-    "bankai": "^9.2.0",
-    "choo": "^6.6.1",
+    "bel": "^5.1.5",
     "component-box": "^0.2.0",
-    "nanofetcher": "^0.1.0",
-    "nanolru": "^1.0.0",
-    "request": "^2.83.0",
-    "xhr": "^2.4.1"
+    "nanolru": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository": "s3ththompson/choo-resource",
+  "author": "Seth Thompson <s3th.thompson@gmail.com> (https://seththompson.org)",
   "license": "MIT"
 }

@@ -20,7 +20,7 @@ var link = require('choo-resource/link')
 
 var app = choo()
 
-app.use(require('choo-resource'))
+app.use(require('choo-resource')())
 
 // registers '/posts' and '/posts/:id' routes
 // registers Post and Posts components in component cache

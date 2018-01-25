@@ -1,75 +1,84 @@
-var key = require('./lib/key')
-var url = require('./lib/url')
 var assert = require('assert')
+var Trie = require('wayfarer/trie')
 
 const CACHE_SIZE = 400
 
-var _components = {}
-var _actions = ['index', 'show', 'edit']
+var _trie = Trie()
 
 var box = require('component-box')
 box.cache(require('nanolru')(CACHE_SIZE))
 
 module.exports = cache
 
-function cache(name, action) {
-  if (_actions.indexOf(action) === -1) return box(name)
-  if (action == 'index') return box(key(name, action))
-  var _id = id.apply(id, arguments)
-  return box(key(name, action), _id)
+function cache (route) {
+  var node = _trie.match(route)
+  if (!node) return null
+  var args = Object.values(node.params)
+  for (var i = 1; i < arguments.length; i++) {
+    args.push(arguments[i])
+  }
+  var _id = id.call(id, route, args)
+  return box(node._route, _id)
 }
 
-cache.register = function(name, Component) {
-  assert.equal(typeof name, 'string', 'component.register: name should be type string')
-  assert.equal(typeof Component, 'function', 'component.register: component should be type function')
-
-  _components[name] = Component
+cache.register = function (route, Component) {
+  assert.equal(
+    typeof route,
+    'string',
+    'component.register: route should be a string'
+  )
+  assert.equal(
+    typeof Component,
+    'function',
+    'component.register: component should be type function'
+  )
   var obj = {}
-  obj[name] = function () {
+  obj[route] = function () {
     return new Component()
   }
   box.use(obj)
+  var node = _trie.create(route)
+  node.Component = Component
+  node._route = route
 }
 
-cache.render = function(name, action) {
-  var el = cache.apply(this, arguments)
-
-  var args = []
-  var _start = 2
-  if (_actions.indexOf(action) === -1) _start = 1
-  for (var i = _start, len = arguments.length; i < len; i++) {
+cache.render = function (route) {
+  var node = _trie.match(route)
+  if (!node) return null
+  var args = Object.values(node.params)
+  for (var i = 1; i < arguments.length; i++) {
     args.push(arguments[i])
   }
+  var _id = id.call(id, route, args)
+  var el = box(node._route, _id)
   return el.render.apply(el, args)
 }
 
-cache.url = function(name, action) {
-  // TODO: assert that action is an action
-  if (action == 'index') return url(name, action)
-  var _id = id.apply(id, arguments)
-  return url(name, action, _id)
+cache.params = function (route) {
+  var node = _trie.match(route)
+  if (!node) return []
+  return Object.values(node.params)
 }
-
-cache.addAction = function(action) {
-  assert.equal(typeof action, 'string', 'component.addAction: action must be string')
-  if (_actions.indexOf(action) === -1) _actions.push(action)
-}
-
-
-cache.id = id
 
 cache.cache = box.cache
 
-function id (name, action) {
-  var Component = _components[key(name, action)]
-  assert.ok(Component, 'component: component name must be registered')
-  var args = []
-  for (var i = 2, len = arguments.length; i < len; i++) {
-    args.push(arguments[i])
-  }
-  assert.equal(typeof Component.identity, 'function', 'component: Component.id should be type function')
-
+function id (route, args) {
+  var node = _trie.match(route)
+  assert.ok(
+    node && node.Component,
+    'component: component name must be registered'
+  )
+  var Component = node.Component
+  assert.equal(
+    typeof Component.identity,
+    'function',
+    'component: Component.id should be type function'
+  )
   var id = Component.identity.apply(Component, args)
-  assert.equal(typeof id, 'string', 'component: Component.id should return a string')
+  assert.equal(
+    typeof id,
+    'string',
+    'component: Component.id should return a string'
+  )
   return id
 }

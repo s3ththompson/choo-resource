@@ -24,23 +24,23 @@ app.use(require('choo-resource'))
 
 // registers '/posts' and '/posts/:id' routes
 // registers Post and Posts components in component cache
-app.resource('posts', {
-  index: [
-  	require('./components/posts'),
-    require('./views/posts')
-  ],
-  show: [
-    require('./components/post'),
-    require('./views/post')
-  ]
-})
+app.resource(
+  '/posts',
+  require('./views/posts'),
+  require('./components/posts')
+  )
+app.resource(
+  '/posts/:id'
+  require('./views/post'),
+  require('./components/post'),
+  )
 
 app.route('/', (state, emit) => {
   return html`<body>
     <ul>
-      <li>${link('All posts', 'posts', 'index')}</li>
-      <li>${link('Post 1', 'posts', 'show', 1)}</li>
-      <li>${link('Post 2', 'posts', 'show', 2)}</li>
+      <li>${link('All posts', '/posts')}</li>
+      <li>${link('Post 1', '/posts/1')}</li>
+      <li>${link('Post 2', '/posts/2')}</li>
     </ul>
   </body>`
 })

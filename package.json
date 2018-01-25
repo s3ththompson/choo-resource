@@ -3,14 +3,22 @@
   "version": "0.1.0",
   "description": "simple resource management for choo apps",
   "main": "index.js",
+  "browser": {
+    "assert": "nanoassert"
+  },
   "dependencies": {
     "bel": "^5.1.5",
     "component-box": "^0.2.0",
-    "nanolru": "^1.0.0"
+    "nanoassert": "^1.1.0",
+    "nanolru": "^1.0.0",
+    "wayfarer": "^6.6.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "prettier-standard": "^8.0.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "fmt": "prettier-standard '**/*.js'",
+    "test": "npm run fmt"
   },
   "repository": "s3ththompson/choo-resource",
   "author": "Seth Thompson <s3th.thompson@gmail.com> (https://seththompson.org)",

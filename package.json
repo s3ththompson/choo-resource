@@ -11,6 +11,7 @@
     "component-box": "^0.2.0",
     "nanoassert": "^1.1.0",
     "nanolru": "^1.0.0",
+    "on-idle": "^3.1.4",
     "wayfarer": "^6.6.3"
   },
   "devDependencies": {

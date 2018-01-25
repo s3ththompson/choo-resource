@@ -1,5 +1,6 @@
 var html = require('bel')
 var assert = require('assert')
+var onIdle = require('on-idle')
 
 var c = require('./component')
 
@@ -26,7 +27,7 @@ function link (text, route) {
     }
     _loading = route
     var _started = false
-    var timer = setTimeout(() => {
+    var timer = setTimeout(function () {
       _started = true
       if (_emit) _emit('progress:start')
     }, 100)
@@ -49,6 +50,53 @@ function link (text, route) {
       }
     }
   }
+}
+
+link.prefetched = function (text, route) {
+  var el = link.apply(link, arguments)
+  if (!el.prefetch) return el
+
+  var args = []
+  for (var i = 1; i < arguments.length; i++) {
+    args.push(arguments[i])
+  }
+  var component = c.apply(c, args)
+  var params = c.params(route)
+  var args2 = params.concat(args.slice(1)) // remove route
+  args2.push(function () {}) // add cb
+  prefetch(component, args2)
+
+  return el
+}
+
+link.prefetchedHover = function (text, route) {
+  var el = link.apply(link, arguments)
+  if (!el.prefetch) return el
+
+  var args = []
+  for (var i = 1; i < arguments.length; i++) {
+    args.push(arguments[i])
+  }
+  var component = c.apply(c, args)
+  var params = c.params(route)
+  var args2 = params.concat(args.slice(1)) // remove route
+  args2.push(function () {}) // add cb
+
+  el.addEventListener(
+    'mouseover',
+    function () {
+      prefetch(component, args2)
+    },
+    false
+  )
+
+  return el
+}
+
+function prefetch (component, args) {
+  onIdle(function () {
+    component.prefetch.apply(component, args)
+  })
 }
 
 link.emitter = function (emitter) {

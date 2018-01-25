@@ -1,6 +1,6 @@
 {
   "name": "choo-resource",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "simple resource management for choo apps",
   "main": "index.js",
   "browser": {

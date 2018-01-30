@@ -8,9 +8,8 @@ module.exports = link
 
 var _emit = null
 var _loading = null
+var _sem = require('semaphore')(2)
 
-// TODO: central queue to avoid overuse, make queue lifo
-// TODO: add opts to control max concurrent (or cap at like 2)
 function link (text, route) {
   var args = []
   for (var i = 1; i < arguments.length; i++) {
@@ -54,16 +53,16 @@ function link (text, route) {
 
 link.prefetched = function (text, route) {
   var el = link.apply(link, arguments)
-  if (!el.prefetch) return el
 
   var args = []
   for (var i = 1; i < arguments.length; i++) {
     args.push(arguments[i])
   }
   var component = c.apply(c, args)
+  if (!component.prefetch) return el
+
   var params = c.params(route)
   var args2 = params.concat(args.slice(1)) // remove route
-  args2.push(function () {}) // add cb
   prefetch(component, args2)
 
   return el
@@ -71,16 +70,16 @@ link.prefetched = function (text, route) {
 
 link.prefetchedHover = function (text, route) {
   var el = link.apply(link, arguments)
-  if (!el.prefetch) return el
 
   var args = []
   for (var i = 1; i < arguments.length; i++) {
     args.push(arguments[i])
   }
   var component = c.apply(c, args)
+  if (!component.prefetch) return el
+
   var params = c.params(route)
   var args2 = params.concat(args.slice(1)) // remove route
-  args2.push(function () {}) // add cb
 
   el.addEventListener(
     'mouseover',
@@ -94,9 +93,18 @@ link.prefetchedHover = function (text, route) {
 }
 
 function prefetch (component, args) {
-  onIdle(function () {
-    component.prefetch.apply(component, args)
+  args.push(function () {
+    _sem.leave()
   })
+  onIdle(function () {
+    _sem.take(function () {
+      component.prefetch.apply(component, args)
+    })
+  })
+}
+
+link.concurrent = function (n) {
+  _sem = require('semaphore')(n)
 }
 
 link.emitter = function (emitter) {
